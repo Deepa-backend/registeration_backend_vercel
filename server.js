@@ -10,7 +10,15 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({ origin: 'http://localhost:3000,https://vercel-project-registeration.vercel.app/' }));
+
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://vercel-project-registeration.vercel.app'
+  ],
+  credentials: true
+}));
+
 app.use(bodyParser.json());
 
 // Connect to MongoDB
