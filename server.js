@@ -8,8 +8,6 @@ const { z } = require('zod');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-
 
 app.use(cors({
   origin: [
@@ -23,9 +21,7 @@ app.use(bodyParser.json());
 
 // Connect to MongoDB
 mongoose
-  .connect(process.env.MONGO_URI, {
-    
-  })
+  .connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err);
@@ -36,7 +32,7 @@ mongoose
 const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
-  password: String, // NOTE: In production, hash this!
+  password: String // NOTE: In production, hash this!
 });
 
 const User = mongoose.model('User', userSchema);
@@ -45,7 +41,7 @@ const User = mongoose.model('User', userSchema);
 const registerSchema = z.object({
   name: z.string().min(2, 'Name is too short'),
   email: z.string().email('Invalid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(6, 'Password must be at least 6 characters')
 });
 
 // Routes
@@ -58,7 +54,7 @@ app.post('/api/register', async (req, res) => {
   if (!result.success) {
     return res.status(400).json({
       message: 'Validation failed',
-      errors: result.error.flatten().fieldErrors,
+      errors: result.error.flatten().fieldErrors
     });
   }
 
@@ -81,6 +77,5 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
-});
+// ✅ Do NOT use app.listen in Vercel
+module.exports = app;
