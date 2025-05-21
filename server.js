@@ -5,48 +5,46 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const { z } = require('zod');
 
-// Load environment variables
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({ origin: 'http://localhost:3000,https://vercel-project-registeration.vercel.app/' }));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true })); // Support HTML form submission
 
-// MongoDB connection
+// Connect to MongoDB
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI, {
+    
+  })
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch((err) => {
-    console.error('❌ MongoDB connection error:', err.message);
+    console.error('❌ MongoDB connection error:', err);
     process.exit(1);
   });
 
-// Define Mongoose User model
+// Define User schema/model
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }, // NOTE: Hash this in production
+  name: String,
+  email: { type: String, unique: true },
+  password: String, // NOTE: In production, hash this!
 });
 
 const User = mongoose.model('User', userSchema);
 
-// Zod validation schema
+// Input validation
 const registerSchema = z.object({
   name: z.string().min(2, 'Name is too short'),
   email: z.string().email('Invalid email'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-// Health check route
+// Routes
 app.get('/', (req, res) => {
   res.send('API is running');
 });
 
-// Registration route
 app.post('/api/register', async (req, res) => {
   const result = registerSchema.safeParse(req.body);
   if (!result.success) {
@@ -70,12 +68,11 @@ app.post('/api/register', async (req, res) => {
 
     return res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
-    console.error('❌ Registration error:', error.message);
+    console.error('Registration error:', error);
     return res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Start server
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
 });
